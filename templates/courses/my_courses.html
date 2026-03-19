@@ -1,0 +1,80 @@
+{% extends 'base/base.html' %}
+{% block title %}Mes cours — EduJeunes{% endblock %}
+{% block body %}
+<div class="container-main py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="section-head">{% if is_teacher %}Mes cours créés{% else %}Mes cours{% endif %}</h1>
+      <p style="color:var(--muted)">{% if is_teacher %}{{ courses.count }} cours{% else %}{{ enrollments.count }} cours suivis{% endif %}</p>
+    </div>
+    {% if is_teacher %}
+    <a href="{% url 'create_course' %}" class="btn btn-primary"><i class="bi bi-plus-lg me-2"></i>Nouveau cours</a>
+    {% endif %}
+  </div>
+
+  <div class="row g-3">
+    {% if is_teacher %}
+      {% for c in courses %}
+      <div class="col-md-6 col-lg-4">
+        <div class="card card-hover h-100">
+          {% if c.thumbnail %}<img src="{{ c.thumbnail.url }}" class="course-thumb">
+          {% else %}<div class="course-thumb-placeholder">📚</div>{% endif %}
+          <div class="p-3">
+            <div class="d-flex gap-2 mb-2">
+              <span class="badge-pill b-{{ c.level }}">{{ c.get_level_display }}</span>
+              <span class="badge-pill b-{{ c.status }}">{{ c.get_status_display }}</span>
+            </div>
+            <h6 style="font-weight:700;margin-bottom:.3rem">{{ c.title }}</h6>
+            <p style="font-size:.82rem;color:var(--muted);margin-bottom:.75rem">{{ c.description|truncatechars:70 }}</p>
+            <div style="font-size:.78rem;color:var(--muted);margin-bottom:.75rem">
+              <i class="bi bi-people me-1"></i>{{ c.enrollment_count }} étudiant(s)
+              · <i class="bi bi-collection-play me-1"></i>{{ c.total_lessons }} leçon(s)
+            </div>
+            <div class="d-flex gap-2">
+              <a href="{% url 'manage_course' slug=c.slug %}" class="btn btn-primary btn-sm flex-grow-1"><i class="bi bi-gear me-1"></i>Gérer</a>
+              <a href="{% url 'course_detail' slug=c.slug %}" class="btn btn-ghost btn-sm"><i class="bi bi-eye"></i></a>
+              <a href="{% url 'classroom' course_slug=c.slug %}" class="btn btn-ghost btn-sm"><i class="bi bi-chat-dots"></i></a>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <div class="col-12 text-center py-5" style="color:var(--muted)">
+        <i class="bi bi-plus-circle" style="font-size:3rem;display:block;margin-bottom:1rem;opacity:.3"></i>
+        <h5>Aucun cours créé</h5>
+        <a href="{% url 'create_course' %}" class="btn btn-primary mt-2">Créer mon premier cours</a>
+      </div>
+      {% endfor %}
+    {% else %}
+      {% for enr in enrollments %}
+      <div class="col-md-6 col-lg-4">
+        <div class="card card-hover h-100">
+          {% if enr.course.thumbnail %}<img src="{{ enr.course.thumbnail.url }}" class="course-thumb">
+          {% else %}<div class="course-thumb-placeholder">📚</div>{% endif %}
+          <div class="p-3">
+            <h6 style="font-weight:700;margin-bottom:.25rem">{{ enr.course.title }}</h6>
+            <p style="font-size:.78rem;color:var(--muted);margin-bottom:.75rem">{{ enr.course.teacher.display_name }}</p>
+            <div class="mb-2">
+              <div class="d-flex justify-content-between" style="font-size:.75rem;color:var(--muted);margin-bottom:.25rem">
+                <span>Progression</span><span style="color:var(--pr)">{{ enr.progress|floatformat:0 }}%</span>
+              </div>
+              <div class="progress"><div class="progress-bar" style="width:{{ enr.progress }}%"></div></div>
+            </div>
+            <div class="d-flex gap-2">
+              <a href="{% url 'course_learn' slug=enr.course.slug %}" class="btn btn-primary btn-sm flex-grow-1"><i class="bi bi-play-fill me-1"></i>Continuer</a>
+              <a href="{% url 'classroom' course_slug=enr.course.slug %}" class="btn btn-ghost btn-sm"><i class="bi bi-chat-dots"></i></a>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <div class="col-12 text-center py-5" style="color:var(--muted)">
+        <i class="bi bi-search" style="font-size:3rem;display:block;margin-bottom:1rem;opacity:.3"></i>
+        <h5>Tu n'es inscrit à aucun cours</h5>
+        <a href="{% url 'course_list' %}" class="btn btn-primary mt-2">Explorer les cours</a>
+      </div>
+      {% endfor %}
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

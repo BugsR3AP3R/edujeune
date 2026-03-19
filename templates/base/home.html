@@ -1,0 +1,136 @@
+{% extends 'base/base.html' %}
+{% block title %}EduJeunes — Apprends, Partage, Grandis{% endblock %}
+{% block body %}
+
+<!-- HERO -->
+<section style="min-height:92vh;display:flex;align-items:center;background:radial-gradient(ellipse 80% 60% at 60% 0%,rgba(255,107,43,.12),transparent),var(--bg)">
+  <div class="container-main" style="padding-top:3rem;padding-bottom:3rem">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-6">
+        <span style="background:rgba(255,107,43,.12);color:var(--pr);padding:.35rem 1rem;border-radius:20px;font-size:.8rem;font-weight:600;display:inline-block;margin-bottom:1.2rem">
+          🇭🇹 Plateforme éducative haïtienne
+        </span>
+        <h1 style="font-size:clamp(2rem,5vw,3.2rem);font-weight:800;line-height:1.15;margin-bottom:1.2rem">
+          Apprends.<br>
+          <span style="background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Partage.</span><br>
+          Grandis ensemble.
+        </h1>
+        <p style="color:var(--muted);font-size:1.05rem;line-height:1.7;margin-bottom:2rem;max-width:480px">
+          Des cours vidéo, audio et texte créés par des jeunes pour des jeunes. Lives, quiz, classrooms, tout est là.
+        </p>
+        <div class="d-flex gap-3 flex-wrap">
+          <a href="{% url 'register' %}?role=student" class="btn btn-primary btn-lg px-4">Commencer gratuitement <i class="bi bi-arrow-right ms-1"></i></a>
+          <a href="{% url 'course_list' %}" class="btn btn-ghost btn-lg px-4">Voir les cours</a>
+        </div>
+        <div class="d-flex gap-4 mt-4 flex-wrap">
+          <div><div style="font-size:1.5rem;font-weight:800;color:var(--pr)">{{ stats.courses }}+</div><div style="font-size:.8rem;color:var(--muted)">Cours disponibles</div></div>
+          <div><div style="font-size:1.5rem;font-weight:800;color:var(--pr)">{{ stats.students }}+</div><div style="font-size:.8rem;color:var(--muted)">Étudiants inscrits</div></div>
+          <div><div style="font-size:1.5rem;font-weight:800;color:var(--pr)">{{ stats.teachers }}+</div><div style="font-size:.8rem;color:var(--muted)">Professeurs</div></div>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <!-- Feature card mockup -->
+        <div style="background:var(--bg2);border:1px solid var(--bord);border-radius:16px;padding:1.5rem;max-width:420px;margin-left:auto">
+          <div class="d-flex align-items-center gap-3 mb-3">
+            <div style="width:44px;height:44px;background:var(--grad);border-radius:10px;display:flex;align-items:center;justify-content:center"><i class="bi bi-play-fill text-white fs-5"></i></div>
+            <div><div style="font-weight:600;font-size:.95rem">Introduction au Python</div><div style="color:var(--muted);font-size:.8rem">Module 2 — Fonctions & boucles</div></div>
+            <span class="badge-pill b-published ms-auto">Publié</span>
+          </div>
+          <div class="mb-3">
+            <div class="d-flex justify-content-between mb-1" style="font-size:.78rem;color:var(--muted)"><span>Progression</span><span style="color:var(--pr)">72%</span></div>
+            <div class="progress"><div class="progress-bar" style="width:72%"></div></div>
+          </div>
+          <div class="row g-2 mb-3">
+            {% for f in "123" %}
+            <div class="col-4"><div class="stat-box"><div class="stat-val" style="font-size:1.1rem;color:var(--pr)">{% if forloop.counter == 1 %}4.9⭐{% elif forloop.counter == 2 %}2.4k{% else %}18h{% endif %}</div><div style="font-size:.72rem;color:var(--muted)">{% if forloop.counter == 1 %}Note{% elif forloop.counter == 2 %}Inscrits{% else %}Durée{% endif %}</div></div></div>
+            {% endfor %}
+          </div>
+          <div style="background:rgba(248,81,73,.08);border:1px solid rgba(248,81,73,.2);border-radius:8px;padding:.65rem 1rem;display:flex;align-items:center;gap:.5rem">
+            <span class="b-live-tag">EN DIRECT</span>
+            <span style="font-size:.85rem">Session Q&amp;A — Module 3 — dans 1h</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section style="background:var(--bg2);border-top:1px solid var(--bord);border-bottom:1px solid var(--bord);padding:4rem 0">
+  <div class="container-main">
+    <div class="text-center mb-4">
+      <h2 class="section-head">Tout ce dont tu as besoin</h2>
+      <p style="color:var(--muted)">Une plateforme pensée pour l'éducation moderne en Haïti</p>
+    </div>
+    <div class="row g-3">
+      {% for feat in features %}
+      <div class="col-md-6 col-lg-4">
+        <div class="card card-hover p-4 h-100">
+          <div style="width:48px;height:48px;background:rgba(255,107,43,.1);border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:1rem">
+            <i class="{{ feat.icon }}" style="font-size:1.3rem;color:var(--pr)"></i>
+          </div>
+          <h6 style="font-weight:700;margin-bottom:.4rem">{{ feat.title }}</h6>
+          <p style="color:var(--muted);font-size:.88rem;margin:0">{{ feat.desc }}</p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- FEATURED COURSES -->
+{% if featured_courses %}
+<section style="padding:4rem 0">
+  <div class="container-main">
+    <div class="d-flex justify-content-between align-items-end mb-3">
+      <div><h2 class="section-head">Cours récents</h2><p style="color:var(--muted)">Créés par notre communauté</p></div>
+      <a href="{% url 'course_list' %}" style="color:var(--pr);font-size:.88rem">Voir tout <i class="bi bi-arrow-right"></i></a>
+    </div>
+    <div class="row g-3">
+      {% for c in featured_courses %}
+      <div class="col-md-6 col-lg-4">
+        <a href="{% url 'course_detail' slug=c.slug %}" style="text-decoration:none">
+          <div class="card card-hover h-100">
+            {% if c.thumbnail %}<img src="{{ c.thumbnail.url }}" class="course-thumb">
+            {% else %}<div class="course-thumb-placeholder">📚</div>{% endif %}
+            <div class="p-3">
+              <div class="d-flex gap-2 mb-2">
+                <span class="badge-pill b-{{ c.level }}">{{ c.get_level_display }}</span>
+                {% if c.is_free %}<span class="badge-pill b-free">Gratuit</span>{% else %}<span class="badge-pill b-paid">${{ c.price }}</span>{% endif %}
+              </div>
+              <h6 style="font-weight:700;color:var(--txt);margin-bottom:.3rem">{{ c.title }}</h6>
+              <p style="color:var(--muted);font-size:.82rem;margin-bottom:.75rem">{{ c.description|truncatechars:80 }}</p>
+              <div class="d-flex align-items-center gap-2" style="font-size:.78rem;color:var(--muted)">
+                <span class="avatar av-sm">{{ c.teacher.initials }}</span>
+                <span>{{ c.teacher.display_name }}</span>
+                <span class="ms-auto"><i class="bi bi-people"></i> {{ c.enrollment_count }}</span>
+              </div>
+            </div>
+          </div>
+        </a>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- CTA -->
+<section style="padding:4rem 0;background:var(--bg2);border-top:1px solid var(--bord)">
+  <div class="container-main text-center">
+    <h2 style="font-size:2rem;font-weight:800;margin-bottom:.75rem">Prêt(e) à rejoindre EduJeunes ?</h2>
+    <p style="color:var(--muted);margin-bottom:2rem">Inscris-toi gratuitement en moins de 30 secondes</p>
+    <div class="d-flex gap-3 justify-content-center flex-wrap">
+      <a href="{% url 'register' %}?role=student" class="btn btn-primary btn-lg px-5"><i class="bi bi-person-plus me-2"></i>Je veux apprendre</a>
+      <a href="{% url 'register' %}?role=teacher" class="btn btn-ghost btn-lg px-5"><i class="bi bi-camera-video me-2"></i>Je veux enseigner</a>
+    </div>
+  </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Inject features from Django (done server-side via context processor would be cleaner, but this works)
+</script>
+{% endblock %}

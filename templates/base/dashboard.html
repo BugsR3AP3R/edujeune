@@ -1,0 +1,131 @@
+{% extends 'base/base.html' %}
+{% block title %}Dashboard — EduJeunes{% endblock %}
+{% block body %}
+<div class="with-sidebar">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div style="padding:.5rem 1.2rem 1rem">
+      <div class="d-flex align-items-center gap-2">
+        {% if user.avatar %}<img src="{{ user.avatar.url }}" class="avatar av-md" style="object-fit:cover">
+        {% else %}<span class="avatar av-md">{{ user.initials }}</span>{% endif %}
+        <div style="min-width:0">
+          <div style="font-weight:600;font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ user.display_name }}</div>
+          <div style="font-size:.75rem;color:var(--pr)">{{ user.get_role_display }}</div>
+        </div>
+      </div>
+      <div style="margin-top:.5rem;font-size:.8rem;color:var(--yellow)"><i class="bi bi-star-fill me-1"></i>{{ user.points }} points</div>
+    </div>
+    <hr class="sidebar-divider">
+    <a href="{% url 'dashboard' %}" class="sidebar-link active"><i class="bi bi-speedometer2"></i>Dashboard</a>
+    <a href="{% url 'my_courses' %}" class="sidebar-link"><i class="bi bi-book"></i>Mes cours</a>
+    <a href="{% url 'course_list' %}" class="sidebar-link"><i class="bi bi-grid"></i>Explorer</a>
+    <a href="{% url 'upcoming_lives' %}" class="sidebar-link"><i class="bi bi-broadcast"></i>Lives</a>
+    {% if user.role == 'teacher' %}
+    <hr class="sidebar-divider">
+    <div class="sidebar-label">Enseignement</div>
+    <a href="{% url 'create_course' %}" class="sidebar-link"><i class="bi bi-plus-circle"></i>Nouveau cours</a>
+    {% endif %}
+    <hr class="sidebar-divider">
+    <a href="{% url 'profile' %}" class="sidebar-link"><i class="bi bi-person"></i>Mon profil</a>
+    <a href="{% url 'logout' %}" class="sidebar-link" style="color:var(--red)!important"><i class="bi bi-box-arrow-right"></i>Déconnexion</a>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="content-area">
+    <div class="mb-4">
+      <h1 style="font-size:1.6rem;font-weight:800">Bonjour, {{ user.first_name|default:user.username }} 👋</h1>
+      <p style="color:var(--muted)">Voici un résumé de ton activité.</p>
+    </div>
+
+    <!-- STATS -->
+    <div class="row g-3 mb-4">
+      {% if user.role == 'teacher' %}
+      <div class="col-6 col-lg-3"><div class="stat-box"><div class="stat-val text-pr">{{ my_courses.count }}</div><div style="font-size:.78rem;color:var(--muted)">Cours créés</div></div></div>
+      <div class="col-6 col-lg-3"><div class="stat-box"><div class="stat-val" style="color:var(--yellow)">{{ total_students }}</div><div style="font-size:.78rem;color:var(--muted)">Étudiants</div></div></div>
+      {% else %}
+      <div class="col-6 col-lg-3"><div class="stat-box"><div class="stat-val text-pr">{{ enrollments.count }}</div><div style="font-size:.78rem;color:var(--muted)">Cours suivis</div></div></div>
+      {% endif %}
+      <div class="col-6 col-lg-3"><div class="stat-box"><div class="stat-val" style="color:var(--green)">{{ user.points }}</div><div style="font-size:.78rem;color:var(--muted)">Points</div></div></div>
+    </div>
+
+    <div class="row g-4">
+      <!-- Courses -->
+      <div class="col-lg-7">
+        <div class="card p-4">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 style="font-weight:700;margin:0">{% if user.role == 'teacher' %}Mes cours{% else %}Continuer à apprendre{% endif %}</h5>
+            <a href="{% url 'my_courses' %}" style="font-size:.82rem;color:var(--pr)">Tout voir <i class="bi bi-arrow-right"></i></a>
+          </div>
+          {% if user.role == 'teacher' %}
+            {% for c in my_courses|slice:":5" %}
+            <div class="d-flex align-items-center gap-3 py-2" style="border-bottom:1px solid var(--bord)">
+              <div style="width:40px;height:40px;background:rgba(255,107,43,.1);border-radius:8px;display:flex;align-items:center;justify-content:center"><i class="bi bi-book-fill text-pr"></i></div>
+              <div style="flex:1;min-width:0">
+                <div style="font-weight:600;font-size:.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.title }}</div>
+                <div style="font-size:.76rem;color:var(--muted)">{{ c.enrollment_count }} étudiant(s) · <span class="badge-pill b-{{ c.status }}" style="font-size:.68rem">{{ c.get_status_display }}</span></div>
+              </div>
+              <a href="{% url 'manage_course' slug=c.slug %}" class="btn btn-ghost btn-sm">Gérer</a>
+            </div>
+            {% empty %}
+            <div class="text-center py-4">
+              <p style="color:var(--muted)">Aucun cours créé.</p>
+              <a href="{% url 'create_course' %}" class="btn btn-primary btn-sm">Créer mon premier cours</a>
+            </div>
+            {% endfor %}
+          {% else %}
+            {% for enr in enrollments|slice:":5" %}
+            <div class="d-flex align-items-center gap-3 py-2" style="border-bottom:1px solid var(--bord)">
+              <div style="width:40px;height:40px;background:rgba(255,107,43,.1);border-radius:8px;display:flex;align-items:center;justify-content:center"><i class="bi bi-play-fill text-pr"></i></div>
+              <div style="flex:1;min-width:0">
+                <div style="font-weight:600;font-size:.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ enr.course.title }}</div>
+                <div class="mt-1"><div class="progress" style="height:4px"><div class="progress-bar" style="width:{{ enr.progress }}%"></div></div></div>
+                <div style="font-size:.72rem;color:var(--muted)">{{ enr.progress|floatformat:0 }}% complété</div>
+              </div>
+              <a href="{% url 'course_learn' slug=enr.course.slug %}" class="btn btn-primary btn-sm">Continuer</a>
+            </div>
+            {% empty %}
+            <div class="text-center py-4">
+              <p style="color:var(--muted)">Tu n'es inscrit à aucun cours.</p>
+              <a href="{% url 'course_list' %}" class="btn btn-primary btn-sm">Explorer les cours</a>
+            </div>
+            {% endfor %}
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Lives + Quick Actions -->
+      <div class="col-lg-5">
+        <div class="card p-4 mb-3">
+          <h5 style="font-weight:700;margin-bottom:1rem">Lives à venir</h5>
+          {% for s in lives|slice:":4" %}
+          <a href="{% url 'live_room' session_id=s.id %}" style="text-decoration:none">
+            <div class="d-flex align-items-center gap-2 py-2" style="border-bottom:1px solid var(--bord)">
+              <i class="bi bi-broadcast" style="color:var(--red)"></i>
+              <div style="flex:1;min-width:0">
+                <div style="font-size:.85rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--txt)">{{ s.title }}</div>
+                <div style="font-size:.75rem;color:var(--muted)">{{ s.scheduled_at|date:"d M Y H:i" }}</div>
+              </div>
+              {% if s.status == 'live' %}<span class="b-live-tag">LIVE</span>{% endif %}
+            </div>
+          </a>
+          {% empty %}
+          <p style="color:var(--muted);font-size:.85rem">Aucun live programmé.</p>
+          {% endfor %}
+        </div>
+        <div class="card p-4">
+          <h5 style="font-weight:700;margin-bottom:1rem">Actions rapides</h5>
+          <div class="d-grid gap-2">
+            <a href="{% url 'course_list' %}" class="btn btn-ghost btn-sm text-start"><i class="bi bi-search me-2"></i>Explorer les cours</a>
+            <a href="{% url 'upcoming_lives' %}" class="btn btn-sm text-start" style="background:rgba(248,81,73,.08);border:1px solid rgba(248,81,73,.2);color:var(--red)"><i class="bi bi-broadcast me-2"></i>Voir tous les lives</a>
+            {% if user.role == 'teacher' %}
+            <a href="{% url 'create_course' %}" class="btn btn-primary btn-sm text-start"><i class="bi bi-plus-lg me-2"></i>Créer un cours</a>
+            {% endif %}
+            <a href="{% url 'edit_profile' %}" class="btn btn-ghost btn-sm text-start"><i class="bi bi-pencil me-2"></i>Modifier mon profil</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

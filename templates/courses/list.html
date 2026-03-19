@@ -1,0 +1,88 @@
+{% extends 'base/base.html' %}
+{% block title %}Explorer les cours — EduJeunes{% endblock %}
+{% block body %}
+<div class="container-main py-4">
+  <div class="mb-4">
+    <h1 class="section-head">Explorer les cours</h1>
+    <p style="color:var(--muted)">{{ courses.count }} cours disponible{{ courses.count|pluralize }}</p>
+  </div>
+
+  <!-- Filters -->
+  <form method="get" action="{% url 'course_list' %}" class="mb-4">
+    <div class="row g-2 align-items-end">
+      <div class="col-md-5">
+        <div style="position:relative">
+          <i class="bi bi-search" style="position:absolute;left:.75rem;top:50%;transform:translateY(-50%);color:var(--muted)"></i>
+          <input name="q" type="text" class="form-control" placeholder="Rechercher un cours…" value="{{ q }}" style="padding-left:2.4rem">
+        </div>
+      </div>
+      <div class="col-md-3">
+        <select name="cat" class="form-select">
+          <option value="">Toutes catégories</option>
+          {% for cat in categories %}<option value="{{ cat.slug }}" {% if sel_cat == cat.slug %}selected{% endif %}>{{ cat.name }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <select name="level" class="form-select">
+          <option value="">Tous niveaux</option>
+          <option value="beginner" {% if sel_level == 'beginner' %}selected{% endif %}>Débutant</option>
+          <option value="intermediate" {% if sel_level == 'intermediate' %}selected{% endif %}>Intermédiaire</option>
+          <option value="advanced" {% if sel_level == 'advanced' %}selected{% endif %}>Avancé</option>
+        </select>
+      </div>
+      <div class="col-md-2"><button type="submit" class="btn btn-primary w-100">Filtrer</button></div>
+    </div>
+  </form>
+
+  <!-- Categories -->
+  <div class="d-flex gap-2 flex-wrap mb-4">
+    <a href="{% url 'course_list' %}" class="btn btn-sm {% if not sel_cat %}btn-primary{% else %}btn-ghost{% endif %}">Tous</a>
+    {% for cat in categories %}
+    <a href="?cat={{ cat.slug }}" class="btn btn-sm {% if sel_cat == cat.slug %}btn-primary{% else %}btn-ghost{% endif %}">
+      <i class="{{ cat.icon }} me-1"></i>{{ cat.name }}
+    </a>
+    {% endfor %}
+  </div>
+
+  <!-- Grid -->
+  <div class="row g-3">
+    {% for c in courses %}
+    <div class="col-md-6 col-lg-4">
+      <a href="{% url 'course_detail' slug=c.slug %}" style="text-decoration:none">
+        <div class="card card-hover h-100">
+          {% if c.thumbnail %}
+            <img src="{{ c.thumbnail.url }}" class="course-thumb">
+          {% else %}
+            <div class="course-thumb-placeholder">{% if c.category %}{{ c.category.icon|default:'📚' }}{% else %}📚{% endif %}</div>
+          {% endif %}
+          <div class="p-3">
+            <div class="d-flex gap-2 mb-2 flex-wrap">
+              <span class="badge-pill b-{{ c.level }}">{{ c.get_level_display }}</span>
+              {% if c.is_free %}<span class="badge-pill b-free">Gratuit</span>{% else %}<span class="badge-pill b-paid">${{ c.price }}</span>{% endif %}
+              {% if c.category %}<span class="badge-pill" style="background:var(--bg3);color:var(--muted)">{{ c.category.name }}</span>{% endif %}
+            </div>
+            <h6 style="font-weight:700;color:var(--txt);margin-bottom:.3rem;line-height:1.3">{{ c.title }}</h6>
+            <p style="color:var(--muted);font-size:.82rem;margin-bottom:.75rem;line-height:1.5">{{ c.description|truncatechars:90 }}</p>
+            <div class="d-flex align-items-center gap-2 mt-auto" style="font-size:.78rem;color:var(--muted)">
+              <span class="avatar av-sm">{{ c.teacher.initials }}</span>
+              <span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.teacher.display_name }}</span>
+              <span class="ms-auto d-flex gap-2 flex-shrink-0">
+                {% if c.avg_rating %}<span style="color:var(--yellow)">⭐ {{ c.avg_rating }}</span>{% endif %}
+                <span><i class="bi bi-people"></i> {{ c.enrollment_count }}</span>
+              </span>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+    {% empty %}
+    <div class="col-12 text-center py-5" style="color:var(--muted)">
+      <i class="bi bi-search" style="font-size:3rem;display:block;margin-bottom:1rem;opacity:.3"></i>
+      <h5>Aucun cours trouvé</h5>
+      <p>Essaie avec d'autres mots-clés ou filters</p>
+      <a href="{% url 'course_list' %}" class="btn btn-ghost btn-sm mt-2">Réinitialiser</a>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
