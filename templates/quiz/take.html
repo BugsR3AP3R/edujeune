@@ -1,0 +1,80 @@
+{% extends 'base/base.html' %}
+{% block title %}{{ quiz.title }} — En cours{% endblock %}
+{% block body %}
+<div class="container-main py-4" style="max-width:720px">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 style="font-size:1.4rem;font-weight:800">{{ quiz.title }}</h1>
+    <div style="text-align:right">
+      <div id="timer" style="font-size:1.8rem;font-weight:800;color:var(--pr);font-family:'Sora',sans-serif">{{ quiz.time_limit_minutes }}:00</div>
+      <div style="font-size:.72rem;color:var(--muted)">Temps restant</div>
+    </div>
+  </div>
+  <form method="post" action="{% url 'take_quiz' quiz_id=quiz.id %}" id="quizForm">
+    {% csrf_token %}
+    {% for q in questions %}
+    <div class="card p-4 mb-4">
+      <div class="d-flex gap-3 mb-3">
+        <div style="min-width:32px;height:32px;background:var(--grad);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;color:#fff">{{ forloop.counter }}</div>
+        <div>
+          <p style="font-weight:600;margin-bottom:.25rem">{{ q.text }}</p>
+          <span style="font-size:.75rem;color:var(--muted)">{{ q.get_question_type_display }} · {{ q.points }} pt(s)</span>
+        </div>
+      </div>
+      {% if q.question_type == 'text' %}
+      <textarea name="q_{{ q.id }}" class="form-control" rows="3" placeholder="Ta réponse…"></textarea>
+      {% else %}
+      <div class="d-flex flex-column gap-2">
+        {% for ch in q.choices.all %}
+        <label class="quiz-opt d-flex align-items-center gap-3 p-3"
+               style="border:1px solid var(--bord);border-radius:10px;cursor:pointer;transition:all .15s"
+               onclick="selectOpt(this,'{% if q.question_type == "multiple" %}multi{% else %}single{% endif %}')">
+          <input type="{% if q.question_type == 'multiple' %}checkbox{% else %}radio{% endif %}"
+                 name="q_{{ q.id }}" value="{{ ch.id }}" class="d-none">
+          <div class="opt-dot" style="width:18px;height:18px;border-radius:{% if q.question_type == 'multiple' %}4px{% else %}50%{% endif %};border:2px solid var(--bord);flex-shrink:0;transition:all .15s"></div>
+          <span style="font-size:.9rem">{{ ch.text }}</span>
+        </label>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+    {% endfor %}
+    <button type="submit" class="btn btn-primary btn-lg w-100" onclick="return confirm('Soumettre le quiz maintenant ?')">
+      <i class="bi bi-check2-all me-2"></i>Soumettre le quiz
+    </button>
+  </form>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+function selectOpt(lbl, type) {
+  const container = lbl.closest('.d-flex');
+  if (type === 'single') {
+    container.querySelectorAll('.quiz-opt').forEach(l => {
+      l.style.borderColor = 'var(--bord)';
+      l.style.background  = 'transparent';
+      l.querySelector('.opt-dot').style.background = 'transparent';
+    });
+  }
+  const on = lbl.style.borderColor === 'var(--pr)';
+  if (on && type === 'multi') {
+    lbl.style.borderColor = 'var(--bord)';
+    lbl.style.background  = 'transparent';
+    lbl.querySelector('.opt-dot').style.background = 'transparent';
+  } else {
+    lbl.style.borderColor = 'var(--pr)';
+    lbl.style.background  = 'rgba(255,107,43,.08)';
+    lbl.querySelector('.opt-dot').style.background = 'var(--pr)';
+  }
+}
+let secs = {{ quiz.time_limit_minutes }} * 60;
+const timerEl = document.getElementById('timer');
+const iv = setInterval(() => {
+  secs--;
+  if (secs <= 0) { clearInterval(iv); document.getElementById('quizForm').submit(); return; }
+  const m = String(Math.floor(secs/60)).padStart(2,'0');
+  const s = String(secs%60).padStart(2,'0');
+  timerEl.textContent = `${m}:${s}`;
+  if (secs < 60) timerEl.style.color = 'var(--red)';
+}, 1000);
+</script>
+{% endblock %}

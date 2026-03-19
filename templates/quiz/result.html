@@ -1,0 +1,55 @@
+{% extends 'base/base.html' %}
+{% block title %}Résultat — {{ attempt.quiz.title }}{% endblock %}
+{% block body %}
+<div class="container-main py-4" style="max-width:640px">
+  <div class="card p-5 text-center mb-4">
+    <div style="font-size:4rem;margin-bottom:.5rem">{% if attempt.passed %}🎉{% else %}😔{% endif %}</div>
+    <h2 style="font-weight:800;margin-bottom:.25rem;color:{% if attempt.passed %}var(--green){% else %}var(--red){% endif %}">
+      {% if attempt.passed %}Félicitations !{% else %}Presque !{% endif %}
+    </h2>
+    <p style="color:var(--muted)">{% if attempt.passed %}Tu as réussi ce quiz.{% else %}Score insuffisant. Tu peux réessayer.{% endif %}</p>
+    <div style="font-size:4rem;font-weight:800;font-family:'Sora',sans-serif;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1;margin:1rem 0">
+      {{ attempt.score|floatformat:0 }}%
+    </div>
+    <p style="color:var(--muted);font-size:.88rem">Score minimum requis : {{ attempt.quiz.passing_score }}%</p>
+    {% if attempt.passed %}
+    <div style="background:rgba(63,185,80,.08);border:1px solid rgba(63,185,80,.2);border-radius:10px;padding:.75rem;font-size:.85rem;color:var(--green)">
+      <i class="bi bi-star-fill me-2"></i>+10 points gagnés !
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Answers review -->
+  <h5 style="font-weight:700;margin-bottom:1rem">Révision des réponses</h5>
+  {% for ans in answers %}
+  <div class="card p-4 mb-3" style="border-left:3px solid {% if ans.is_correct %}var(--green){% elif ans.question.question_type == 'text' %}var(--blue){% else %}var(--red){% endif %}">
+    <div class="d-flex align-items-start gap-2 mb-2">
+      <i class="bi bi-{% if ans.is_correct %}check-circle-fill{% else %}x-circle-fill{% endif %}" style="color:{% if ans.is_correct %}var(--green){% else %}var(--red){% endif %};margin-top:.15rem"></i>
+      <p style="font-weight:600;margin:0;font-size:.9rem">{{ ans.question.text }}</p>
+    </div>
+    {% if ans.question.question_type == 'text' %}
+      <p style="font-size:.85rem;color:var(--muted);margin-left:1.4rem">Ta réponse : {{ ans.text_answer|default:"(vide)" }}</p>
+    {% else %}
+      <div style="margin-left:1.4rem">
+        {% for ch in ans.question.choices.all %}
+        <div style="font-size:.85rem;padding:.2rem 0;color:{% if ch.is_correct %}var(--green){% elif ch in ans.selected_choices.all %}var(--red){% else %}var(--muted){% endif %}">
+          {% if ch.is_correct %}<i class="bi bi-check2 me-1"></i>{% elif ch in ans.selected_choices.all %}<i class="bi bi-x me-1"></i>{% else %}<i class="bi bi-circle me-1"></i>{% endif %}
+          {{ ch.text }}
+        </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+    {% if ans.question.explanation %}
+    <div class="mt-2 p-2" style="background:rgba(88,166,255,.06);border-radius:6px;font-size:.8rem;color:var(--blue);margin-left:1.4rem">
+      <i class="bi bi-lightbulb me-1"></i>{{ ans.question.explanation }}
+    </div>
+    {% endif %}
+  </div>
+  {% endfor %}
+
+  <div class="d-flex gap-2 mt-4">
+    <a href="{% url 'quiz_detail' quiz_id=attempt.quiz.id %}" class="btn btn-ghost flex-grow-1">Retour au quiz</a>
+    <a href="{% url 'course_learn' slug=attempt.quiz.course.slug %}" class="btn btn-primary flex-grow-1">Continuer le cours</a>
+  </div>
+</div>
+{% endblock %}

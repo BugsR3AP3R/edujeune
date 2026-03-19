@@ -1,0 +1,36 @@
+{% extends 'base/base.html' %}
+{% block title %}{{ quiz.title }} — Quiz{% endblock %}
+{% block body %}
+<div class="container-main py-4" style="max-width:700px">
+  <div class="card p-4 mb-4">
+    <h1 style="font-size:1.4rem;font-weight:800;margin-bottom:.5rem">{{ quiz.title }}</h1>
+    {% if quiz.description %}<p style="color:var(--muted)">{{ quiz.description }}</p>{% endif %}
+    <div class="row g-3 mt-1">
+      <div class="col-3 text-center"><div class="stat-box"><div class="stat-val text-pr" style="font-size:1.2rem">{{ quiz.questions.count }}</div><div style="font-size:.72rem;color:var(--muted)">Questions</div></div></div>
+      <div class="col-3 text-center"><div class="stat-box"><div class="stat-val" style="font-size:1.2rem;color:var(--yellow)">{{ quiz.time_limit_minutes }}min</div><div style="font-size:.72rem;color:var(--muted)">Durée max</div></div></div>
+      <div class="col-3 text-center"><div class="stat-box"><div class="stat-val" style="font-size:1.2rem;color:var(--green)">{{ quiz.passing_score }}%</div><div style="font-size:.72rem;color:var(--muted)">Score min</div></div></div>
+      <div class="col-3 text-center"><div class="stat-box"><div class="stat-val" style="font-size:1.2rem">{{ quiz.max_attempts }}</div><div style="font-size:.72rem;color:var(--muted)">Tentatives</div></div></div>
+    </div>
+  </div>
+  {% if attempts %}
+  <div class="card p-4 mb-4">
+    <h5 style="font-weight:700;margin-bottom:1rem">Mes tentatives</h5>
+    {% for att in attempts %}
+    <div class="d-flex align-items-center gap-3 py-2" style="border-bottom:1px solid var(--bord)">
+      <span style="font-size:.85rem">Tentative #{{ att.attempt_number }}</span>
+      <span style="font-weight:700;color:{% if att.passed %}var(--green){% else %}var(--red){% endif %}">{{ att.score|floatformat:0 }}%</span>
+      <span class="badge-pill {% if att.passed %}b-free{% else %}b-advanced{% endif %}">{% if att.passed %}Réussi{% else %}Échoué{% endif %}</span>
+      <a href="{% url 'quiz_result' attempt_id=att.id %}" class="btn btn-ghost btn-sm ms-auto">Voir <i class="bi bi-arrow-right ms-1"></i></a>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+  {% if can_try %}
+  <a href="{% url 'take_quiz' quiz_id=quiz.id %}" class="btn btn-primary btn-lg w-100">
+    <i class="bi bi-pencil-square me-2"></i>Commencer le quiz
+  </a>
+  {% else %}
+  <div class="alert alert-danger text-center">Nombre maximum de tentatives atteint ({{ quiz.max_attempts }}/{{ quiz.max_attempts }})</div>
+  {% endif %}
+</div>
+{% endblock %}
